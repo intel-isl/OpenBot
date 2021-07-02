@@ -87,6 +87,11 @@ public class LoggerFragment extends CameraFragment implements ServerListener {
     setControlMode(Enums.ControlMode.getByID(preferencesManager.getControlMode()));
     setDriveMode(Enums.DriveMode.getByID(preferencesManager.getDriveMode()));
 
+    binding.sensorDataButton.setOnClickListener(
+        v -> {
+          SensorsDialog sensorsDialog = new SensorsDialog();
+          sensorsDialog.show(getChildFragmentManager(), sensorsDialog.getTag());
+        });
     binding.controllerContainer.controlMode.setOnClickListener(
         v -> {
           Enums.ControlMode controlMode =

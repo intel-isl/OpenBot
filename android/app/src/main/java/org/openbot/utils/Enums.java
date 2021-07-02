@@ -4,6 +4,31 @@ import android.util.Size;
 import java.util.EnumSet;
 
 public class Enums {
+
+  public enum SensorType {
+    ACCELEROMETER("Accelerometer"),
+    GYROSCOPE("Gyroscope"),
+    PROXIMITY("Proximity"),
+    GRAVITY("Gravity"),
+    MAGNETIC("Magnetic"),
+    LIGHT("Light"),
+    PRESSURE("Pressure"),
+    GPS("Gps"),
+    VEHICLE("Vehicle"),
+    POSE("Pose"),
+    MOTION("Motion");
+
+    private String sensor;
+
+    SensorType(String sensor) {
+      this.sensor = sensor;
+    }
+
+    public String getSensor() {
+      return sensor;
+    }
+  }
+
   public enum LogMode {
     ALL_IMGS(0),
     CROP_IMG(1),

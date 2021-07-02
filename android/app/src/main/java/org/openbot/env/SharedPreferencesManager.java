@@ -32,6 +32,7 @@ public class SharedPreferencesManager {
   private static final String NUM_THREAD = "NUM_THREAD";
   private static final String CAMERA_SWITCH = "CAMERA_SWITCH";
   private static final String SHEET_EXPANDED = "SHEET_EXPANDED";
+  private static final String DELAY = "DELAY";
 
   private final SharedPreferences preferences;
 
@@ -144,5 +145,21 @@ public class SharedPreferencesManager {
 
   public void setSheetExpanded(boolean expanded) {
     preferences.edit().putBoolean(SHEET_EXPANDED, expanded).apply();
+  }
+
+  public void setSensorStatus(boolean status, String sensor) {
+    preferences.edit().putBoolean(sensor, status).apply();
+  }
+
+  public boolean getSensorStatus(String sensor) {
+    return preferences.getBoolean(sensor, false);
+  }
+
+  public void setDelay(int delay) {
+    preferences.edit().putInt(DELAY, delay).apply();
+  }
+
+  public int getDelay() {
+    return preferences.getInt(DELAY, 200);
   }
 }

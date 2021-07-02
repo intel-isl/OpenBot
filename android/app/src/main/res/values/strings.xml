@@ -132,6 +132,7 @@
     <string name="permissions">Permissions</string>
     <string name="model_download_body">Going back would cancel the download. Are you sure?</string>
     <string name="model_download_title">Model Download In Progress</string>
+    <string name="save">Save</string>
     <string name="confirm_title">Are you sure?</string>
     <string name="stream_change_body">The app needs to be restarted for this setting to take effect</string>
 

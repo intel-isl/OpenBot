@@ -27,6 +27,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import org.openbot.R;
 import org.openbot.env.Logger;
+import org.openbot.env.SharedPreferencesManager;
+import org.openbot.utils.Enums;
 
 public class SensorService extends Service implements SensorEventListener {
   private SensorManager sensorManager;
@@ -72,6 +74,8 @@ public class SensorService extends Service implements SensorEventListener {
   private static final Logger LOGGER = new Logger();
   Messenger messenger = new Messenger(new SensorMessageHandler());
 
+  private SharedPreferencesManager preferencesManager;
+
   @Override
   public final void onCreate() {
     super.onCreate();
@@ -88,6 +92,7 @@ public class SensorService extends Service implements SensorEventListener {
     stationarySensor = sensorManager.getDefaultSensor(Sensor.TYPE_STATIONARY_DETECT);
     // Initialize the FusedLocationClient.
     fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+    preferencesManager = new SharedPreferencesManager(this);
   }
 
   @Override
@@ -103,44 +108,76 @@ public class SensorService extends Service implements SensorEventListener {
       logFolder = (String) extras.get("logFolder");
     }
 
-    accelerometerLog = openLog(logFolder, "accelerometerLog.txt");
-    // appendLog(mAccelerometerLog, mAccelerometer.getName());
-    appendLog(accelerometerLog, "timestamp[ns],x[m/s^2],y[m/s^2],z[m/s^2]");
+    int delay = (int) (preferencesManager.getDelay() * 1000);
+    if (preferencesManager.getSensorStatus(Enums.SensorType.ACCELEROMETER.getSensor())) {
+      accelerometerLog = openLog(logFolder, "accelerometerLog.txt");
+      // appendLog(mAccelerometerLog, mAccelerometer.getName());
+      appendLog(accelerometerLog, "timestamp[ns],x[m/s^2],y[m/s^2],z[m/s^2]");
+      sensorManager.registerListener(this, accelerometerSensor, delay);
+    }
 
-    gyroscopeLog = openLog(logFolder, "gyroscopeLog.txt");
-    // appendLog(mGyroscopeLog, mGyroscope.getName());
-    appendLog(gyroscopeLog, "timestamp[ns],x[rad/s],y[rad/s],z[rad/s]");
+    if (preferencesManager.getSensorStatus(Enums.SensorType.GYROSCOPE.getSensor())) {
+      gyroscopeLog = openLog(logFolder, "gyroscopeLog.txt");
+      // appendLog(mGyroscopeLog, mGyroscope.getName());
+      appendLog(gyroscopeLog, "timestamp[ns],x[rad/s],y[rad/s],z[rad/s]");
+      sensorManager.registerListener(this, gyroscopeSensor, delay);
+    }
 
-    gravityLog = openLog(logFolder, "gravityLog.txt");
-    // appendLog(mGravityLog, mGravity.getName());
-    appendLog(gravityLog, "timestamp[ns],x[m/s^2],y[m/s^2],z[m/s^2]");
+    if (preferencesManager.getSensorStatus(Enums.SensorType.GRAVITY.getSensor())) {
+      gravityLog = openLog(logFolder, "gravityLog.txt");
+      // appendLog(mGravityLog, mGravity.getName());
+      appendLog(gravityLog, "timestamp[ns],x[m/s^2],y[m/s^2],z[m/s^2]");
+      sensorManager.registerListener(this, gravitySensor, delay);
+    }
 
-    magneticLog = openLog(logFolder, "magneticLog.txt");
-    // appendLog(mMagneticLog, mMagnetic.getName());
-    appendLog(magneticLog, "timestamp[ns],x[uT],y[uT],z[uT]");
+    if (preferencesManager.getSensorStatus(Enums.SensorType.MAGNETIC.getSensor())) {
+      magneticLog = openLog(logFolder, "magneticLog.txt");
+      // appendLog(mMagneticLog, mMagnetic.getName());
+      appendLog(magneticLog, "timestamp[ns],x[uT],y[uT],z[uT]");
+      sensorManager.registerListener(this, magneticSensor, delay);
+    }
 
-    lightLog = openLog(logFolder, "lightLog.txt");
-    // appendLog(mLightLog, mLight.getName());
-    appendLog(lightLog, "timestamp[ns],light[lux]");
+    if (preferencesManager.getSensorStatus(Enums.SensorType.LIGHT.getSensor())) {
+      lightLog = openLog(logFolder, "lightLog.txt");
+      // appendLog(mLightLog, mLight.getName());
+      appendLog(lightLog, "timestamp[ns],light[lux]");
+      sensorManager.registerListener(this, lightSensor, delay);
+    }
 
-    proximityLog = openLog(logFolder, "proximityLog.txt");
-    // appendLog(mProximityLog, mProximity.getName());
-    appendLog(proximityLog, "timestamp[ns],proximity[cm]");
+    if (preferencesManager.getSensorStatus(Enums.SensorType.PROXIMITY.getSensor())) {
+      proximityLog = openLog(logFolder, "proximityLog.txt");
+      // appendLog(mProximityLog, mProximity.getName());
+      appendLog(proximityLog, "timestamp[ns],proximity[cm]");
+      sensorManager.registerListener(this, proximitySensor, delay);
+    }
 
-    pressureLog = openLog(logFolder, "pressureLog.txt");
-    // appendLog(mPressureLog, mPressure.getName());
-    appendLog(pressureLog, "timestamp[ns],pressure[hPa]");
+    if (preferencesManager.getSensorStatus(Enums.SensorType.PRESSURE.getSensor())) {
+      pressureLog = openLog(logFolder, "pressureLog.txt");
+      // appendLog(mPressureLog, mPressure.getName());
+      appendLog(pressureLog, "timestamp[ns],pressure[hPa]");
+      sensorManager.registerListener(this, pressureSensor, delay);
+    }
 
-    poseLog = openLog(logFolder, "poseLog.txt");
-    // appendLog(mPoseLog, mPose.getName());
-    appendLog(poseLog, "timestamp[ns],x,y,z,w,x,y,z,dx,dy,dz,dw,dx,dy,dz,id");
+    if (preferencesManager.getSensorStatus(Enums.SensorType.POSE.getSensor())) {
+      poseLog = openLog(logFolder, "poseLog.txt");
+      // appendLog(mPoseLog, mPose.getName());
+      appendLog(
+          poseLog,
+          "timestamp[ns],x,y,z,w,x,y,z,dx,dy,dz,dw,dx,dy,dz,"
+              + "sensorManager.registerListener(this, poseSensor, delay);id");
+    }
 
-    motionLog = openLog(logFolder, "motionLog.txt");
-    // appendLog(mMotionLog, mMotion.getName());
-    appendLog(motionLog, "timestamp[ns],motion");
+    if (preferencesManager.getSensorStatus(Enums.SensorType.MOTION.getSensor())) {
+      motionLog = openLog(logFolder, "motionLog.txt");
+      // appendLog(mMotionLog, mMotion.getName());
+      appendLog(motionLog, "timestamp[ns],motion");
+      sensorManager.registerListener(this, motionSensor, delay);
+    }
 
-    gpsLog = openLog(logFolder, "gpsLog.txt");
-    appendLog(gpsLog, "timestamp[ns],latitude,longitude,altitude[m],bearing,speed[m/s]");
+    if (preferencesManager.getSensorStatus(Enums.SensorType.GPS.getSensor())) {
+      gpsLog = openLog(logFolder, "gpsLog.txt");
+      appendLog(gpsLog, "timestamp[ns],latitude,longitude,altitude[m],bearing,speed[m/s]");
+    }
 
     frameLog = openLog(logFolder, "rgbFrames.txt");
     appendLog(frameLog, "timestamp[ns],frame");
@@ -154,28 +191,11 @@ public class SensorService extends Service implements SensorEventListener {
     indicatorLog = openLog(logFolder, "indicatorLog.txt");
     appendLog(indicatorLog, "timestamp[ns],signal");
 
-    vehicleLog = openLog(logFolder, "vehicleLog.txt");
-    appendLog(vehicleLog, "timestamp[ns],batteryVoltage,leftWheel,rightWheel,obstacle");
-
-    sensorManager.registerListener(this, accelerometerSensor, SensorManager.SENSOR_DELAY_NORMAL);
-    sensorManager.registerListener(
-        this, gyroscopeSensor, android.hardware.SensorManager.SENSOR_DELAY_NORMAL);
-    sensorManager.registerListener(
-        this, gravitySensor, android.hardware.SensorManager.SENSOR_DELAY_NORMAL);
-    sensorManager.registerListener(
-        this, magneticSensor, android.hardware.SensorManager.SENSOR_DELAY_NORMAL);
-    sensorManager.registerListener(
-        this, lightSensor, android.hardware.SensorManager.SENSOR_DELAY_NORMAL);
-    sensorManager.registerListener(
-        this, proximitySensor, android.hardware.SensorManager.SENSOR_DELAY_NORMAL);
-    sensorManager.registerListener(
-        this, pressureSensor, android.hardware.SensorManager.SENSOR_DELAY_NORMAL);
-    sensorManager.registerListener(
-        this, poseSensor, android.hardware.SensorManager.SENSOR_DELAY_NORMAL);
-    sensorManager.registerListener(
-        this, motionSensor, android.hardware.SensorManager.SENSOR_DELAY_NORMAL);
-    sensorManager.registerListener(
-        this, stationarySensor, android.hardware.SensorManager.SENSOR_DELAY_NORMAL);
+    if (preferencesManager.getSensorStatus(Enums.SensorType.VEHICLE.getSensor())) {
+      vehicleLog = openLog(logFolder, "vehicleLog.txt");
+      appendLog(vehicleLog, "timestamp[ns],batteryVoltage,leftWheel,rightWheel,obstacle");
+    }
+    sensorManager.registerListener(this, stationarySensor, delay);
 
     locationCallback =
         new LocationCallback() {
@@ -441,7 +461,7 @@ public class SensorService extends Service implements SensorEventListener {
       writer.append(text);
       writer.newLine();
       writer.flush();
-    } catch (IOException e) {
+    } catch (Exception e) {
       e.printStackTrace();
     }
   }

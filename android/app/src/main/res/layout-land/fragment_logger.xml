@@ -144,25 +144,17 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent">
 
-            <CheckBox
-                android:id="@+id/checkBox"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:checked="true"
-                android:enabled="false"
-                android:layout_marginEnd="16dp"
-                android:text="Sensor Data"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toEndOf="@+id/ipAddress"
-                app:layout_constraintTop_toTopOf="parent" />
 
             <CheckBox
                 android:id="@+id/previewCheckBox"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginEnd="16dp"
                 android:text="Preview Images"
-                app:layout_constraintStart_toStartOf="@id/checkBox"
-                app:layout_constraintTop_toBottomOf="@id/checkBox" />
+                app:layout_constraintBottom_toTopOf="@+id/trainingDataCheckBox"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/ipAddress"
+                app:layout_constraintTop_toTopOf="parent" />
 
             <CheckBox
                 android:id="@+id/trainingDataCheckBox"
@@ -170,6 +162,7 @@
                 android:layout_height="wrap_content"
                 android:checked="true"
                 android:text="Training Images"
+                app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="@id/previewCheckBox"
                 app:layout_constraintTop_toBottomOf="@+id/previewCheckBox" />
 
@@ -177,20 +170,40 @@
                 android:id="@+id/server"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
                 android:padding="8dp"
                 android:text="Server Address"
                 android:textColor="@android:color/black"
+                app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@+id/ipAddress"
-                app:layout_constraintTop_toTopOf="@id/previewCheckBox"
-                app:layout_constraintStart_toStartOf="parent" />
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/sensorDataButton" />
+
+            <Button
+                android:id="@+id/sensorDataButton"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:layout_margin="4dp"
+                android:layout_marginTop="16dp"
+                android:background="@drawable/button_background_border"
+                android:foreground="?attr/selectableItemBackground"
+                android:paddingHorizontal="32dp"
+                android:text="Sensor Data"
+                android:textAllCaps="false"
+                android:textColor="@android:color/black"
+                android:textSize="12sp"
+                app:layout_constraintBottom_toTopOf="@+id/server"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_chainStyle="packed" />
 
             <TextView
                 android:id="@+id/ipAddress"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:padding="8dp"
-                android:maxLines="1"
                 android:ellipsize="end"
+                android:maxLines="1"
+                android:padding="8dp"
                 android:text="x.x.x.x"
                 android:textColor="@android:color/black"
                 app:layout_constraintBottom_toBottomOf="@+id/server"
