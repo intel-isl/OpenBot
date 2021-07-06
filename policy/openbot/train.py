@@ -33,8 +33,13 @@ AUTOTUNE = tf.data.experimental.AUTOTUNE
 
 dataset_name = "my_openbot"
 
-train_data_dir = os.path.join(dataset_dir, "train_data")
-test_data_dir = os.path.join(dataset_dir, "test_data")
+load_from_tf_record = True
+if (load_from_tf_record):
+    train_data_dir = os.path.join(dataset_dir, "tfrecords/train.tfrec")
+    test_data_dir = os.path.join(dataset_dir, "tfrecords/test.tfrec")
+else:
+    train_data_dir = os.path.join(dataset_dir, "train_data")
+    test_data_dir = os.path.join(dataset_dir, "test_data")
 
 
 @dataclass
@@ -96,6 +101,7 @@ class Training:
         self.log_path = ""
         self.loss_fn = None
         self.metric_list = None
+        self.custom_objects = None
 
 
 class CancelledException(BaseException):
@@ -171,6 +177,124 @@ def process_data(tr: Training):
     )
 
 
+def augment_img(img):
+    """Color augmentation
+
+    Args:
+      img: input image
+
+    Returns:
+      img: augmented image
+    """
+    img = tf.image.random_hue(img, 0.08)
+    img = tf.image.random_saturation(img, 0.6, 1.6)
+    img = tf.image.random_brightness(img, 0.05)
+    img = tf.image.random_contrast(img, 0.7, 1.3)
+    return img
+
+
+def augment_cmd(cmd):
+    """
+    Command augmentation
+
+    Args:
+      cmd: input command
+
+    Returns:
+      cmd: augmented command
+    """
+    if not (cmd > 0 or cmd < 0):
+        coin = tf.random.uniform(
+            shape=[1], minval=0, maxval=1, dtype=tf.dtypes.float32
+        )
+        if coin < 0.25:
+            cmd = -1.0
+        elif coin < 0.5:
+            cmd = 1.0
+    return cmd
+
+
+def flip_sample(img, cmd, label):
+    coin = tf.random.uniform(shape=[1], minval=0, maxval=1, dtype=tf.dtypes.float32)
+    if coin < 0.5:
+        img = tf.image.flip_left_right(img)
+        cmd = -cmd
+        label = tf.reverse(label, axis=[0])
+    return img, cmd, label
+
+
+def load_tfrecord_data(tr: Training, verbose=0):
+    def parse_tfrecord_fn(example):
+        feature_description = {
+            "image": tf.io.FixedLenFeature([], tf.string),
+            "path": tf.io.FixedLenFeature([], tf.string),
+            "left": tf.io.FixedLenFeature([], tf.float32),
+            "right": tf.io.FixedLenFeature([], tf.float32),
+            "cmd": tf.io.FixedLenFeature([], tf.float32),
+        }
+        example = tf.io.parse_single_example(example, feature_description)
+        img = tf.io.decode_jpeg(example["image"], channels=3)
+        img = tf.image.convert_image_dtype(img, tf.float32)
+        example["image"] = img
+        return example
+
+    def process_train_sample(features):
+        #image = tf.image.resize(features["image"], size=(224, 224))
+        image = features["image"]
+        cmd  = features["cmd"]
+        label = [features["left"], features["right"]]
+        image = augment_img(image)
+        if tr.hyperparameters.FLIP_AUG:
+            img, cmd, label = flip_sample(img, cmd, label)
+        if tr.hyperparameters.CMD_AUG:
+            cmd = augment_cmd(cmd)
+
+        return (image, cmd), label
+
+    def process_test_sample(features):
+        image = features["image"]
+        cmd = features["cmd"]
+        label = [features["left"], features["right"]]
+        return (image, cmd), label
+
+    train_dataset = ( 
+        tf.data.TFRecordDataset(train_data_dir, num_parallel_reads=AUTOTUNE)
+        .map(parse_tfrecord_fn, num_parallel_calls=AUTOTUNE)
+        .map(process_train_sample, num_parallel_calls=AUTOTUNE)
+    )
+
+    # Obtains the images shapes of records from .tfrecords.
+    for (image, cmd), label in train_dataset.take(1):
+        shape = image.numpy().shape
+        tr.NETWORK_IMG_HEIGHT = shape[0]
+        tr.NETWORK_IMG_WIDTH = shape[1]
+        print("Image shape: ", shape)
+        print("Command: ", cmd.numpy())
+        print("Label: ", label.numpy())
+
+    # Obtains the total number of records from .tfrecords file
+    # https://stackoverflow.com/questions/40472139/obtaining-total-number-of-records-from-tfrecords-file-in-tensorflow
+    tr.image_count_train = sum(1 for _ in train_dataset)
+    print ("Number of training instances: ", tr.image_count_train)
+
+    # Prepare dataset for training
+    tr.train_ds = (
+        train_dataset.shuffle(tr.hyperparameters.TRAIN_BATCH_SIZE * 10)
+        .repeat()
+        .batch(tr.hyperparameters.TRAIN_BATCH_SIZE)
+        .prefetch(AUTOTUNE)
+    )
+
+    tr.test_ds = (
+        tf.data.TFRecordDataset(test_data_dir, num_parallel_reads=AUTOTUNE)
+        .map(parse_tfrecord_fn, num_parallel_calls=AUTOTUNE)
+        .map(process_test_sample, num_parallel_calls=AUTOTUNE)
+        .shuffle(tr.hyperparameters.TRAIN_BATCH_SIZE * 10)
+        .batch(tr.hyperparameters.TEST_BATCH_SIZE)
+        .prefetch(AUTOTUNE)
+    )
+
+
 def load_data(tr: Training, verbose=0):
     # list_train_ds = tf.data.Dataset.list_files(train_frames)
     # list_test_ds = tf.data.Dataset.list_files(test_frames)
@@ -192,48 +316,6 @@ def load_data(tr: Training, verbose=0):
         print("Number of train samples: %d" % len(train_data.labels))
         print("Number of test samples: %d" % len(test_data.labels))
 
-    def augment_img(img):
-        """Color augmentation
-
-        Args:
-          img: input image
-
-        Returns:
-          img: augmented image
-        """
-        img = tf.image.random_hue(img, 0.08)
-        img = tf.image.random_saturation(img, 0.6, 1.6)
-        img = tf.image.random_brightness(img, 0.05)
-        img = tf.image.random_contrast(img, 0.7, 1.3)
-        return img
-
-    def augment_cmd(cmd):
-        """
-        Command augmentation
-
-        Args:
-          cmd: input command
-
-        Returns:
-          cmd: augmented command
-        """
-        if not (cmd > 0 or cmd < 0):
-            coin = tf.random.uniform(
-                shape=[1], minval=0, maxval=1, dtype=tf.dtypes.float32
-            )
-            if coin < 0.25:
-                cmd = -1.0
-            elif coin < 0.5:
-                cmd = 1.0
-        return cmd
-
-    def flip_sample(img, cmd, label):
-        coin = tf.random.uniform(shape=[1], minval=0, maxval=1, dtype=tf.dtypes.float32)
-        if coin < 0.5:
-            img = tf.image.flip_left_right(img)
-            cmd = -cmd
-            label = tf.reverse(label, axis=[0])
-        return img, cmd, label
 
     def process_train_path(file_path):
         cmd, label = train_data.get_label(
@@ -280,7 +362,7 @@ def load_data(tr: Training, verbose=0):
 def do_training(tr: Training, callback: tf.keras.callbacks.Callback, verbose=0):
     tr.model_name = dataset_name + "_" + str(tr.hyperparameters)
     tr.checkpoint_path = os.path.join(models_dir, tr.model_name, "checkpoints")
-
+    tr.custom_objects = {'direction_metric':metrics.direction_metric, 'angle_metric':metrics.angle_metric}
     append_logs = False
     model: tf.keras.Model
     if tr.hyperparameters.USE_LAST:
@@ -289,7 +371,7 @@ def do_training(tr: Training, callback: tf.keras.callbacks.Callback, verbose=0):
         last_checkpoint = sorted(dirs)[-1]
         model = tf.keras.models.load_model(
             os.path.join(tr.checkpoint_path, last_checkpoint),
-            custom_objects=None,
+            custom_objects=tr.custom_objects,
             compile=False,
         )
     else:
@@ -300,10 +382,10 @@ def do_training(tr: Training, callback: tf.keras.callbacks.Callback, verbose=0):
         )
 
     tr.loss_fn = losses.sq_weighted_mse_angle
-    metric_list = ["MeanAbsoluteError", metrics.direction_metric, metrics.angle_metric]
+    tr.metric_list = ["mean_absolute_error", tr.custom_objects['direction_metric'], tr.custom_objects['angle_metric']]
     optimizer = tf.keras.optimizers.Adam(lr=tr.hyperparameters.LEARNING_RATE)
 
-    model.compile(optimizer=optimizer, loss=tr.loss_fn, metrics=metric_list)
+    model.compile(optimizer=optimizer, loss=tr.loss_fn, metrics=tr.metric_list)
     if verbose:
         print(model.summary())
 
@@ -334,8 +416,8 @@ def do_evaluation(tr: Training, callback: tf.keras.callbacks.Callback, verbose=0
     callback.broadcast("message", "Generate plots...")
     history = tr.history
     log_path = tr.log_path
-    plt.plot(history.history["MeanAbsoluteError"], label="mean_absolute_error")
-    plt.plot(history.history["val_MeanAbsoluteError"], label="val_mean_absolute_error")
+    plt.plot(history.history["mean_absolute_error"], label="mean_absolute_error")
+    plt.plot(history.history["val_mean_absolute_error"], label="val_mean_absolute_error")
     plt.xlabel("Epoch")
     plt.ylabel("Mean Absolute Error")
     plt.legend(loc="lower right")
@@ -395,7 +477,7 @@ def do_evaluation(tr: Training, callback: tf.keras.callbacks.Callback, verbose=0
 
     callback.broadcast("message", "Evaluate model...")
     best_model = utils.load_model(
-        os.path.join(checkpoint_path, best_checkpoint), tr.loss_fn, tr.metric_list
+        os.path.join(checkpoint_path, best_checkpoint), tr.loss_fn, tr.metric_list, tr.custom_objects
     )
     # test_loss, test_acc, test_dir, test_ang = best_model.evaluate(tr.test_ds,
     res = best_model.evaluate(
@@ -427,10 +509,14 @@ def savefig(path):
 
 def start_train(params: Hyperparameters, callback: MyCallback, verbose=0):
     tr = Training(params)
-    callback.broadcast("message", "Processing data...")
-    process_data(tr)
-    callback.broadcast("message", "Loading data...")
-    load_data(tr, verbose)
+    if load_from_tf_record:
+        callback.broadcast("message", "Loading data from tfrecord...")
+        load_tfrecord_data(tr, verbose)
+    else:
+        callback.broadcast("message", "Processing data...")
+        process_data(tr)
+        callback.broadcast("message", "Loading data...")
+        load_data(tr, verbose)
     callback.broadcast("preview")
     do_training(tr, callback, verbose)
     do_evaluation(tr, callback, verbose)

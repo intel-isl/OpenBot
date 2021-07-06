@@ -95,9 +95,9 @@ def load_tflite(*parts):
     return interpreter
 
 
-def load_model(model_path, loss_fn, metric_list):
+def load_model(model_path, loss_fn, metric_list, custom_objects):
     model: tf.keras.Model = tf.keras.models.load_model(
-        model_path, custom_objects=None, compile=False
+        model_path, custom_objects=custom_objects, compile=False
     )
     model.compile(loss=loss_fn, metrics=metric_list)
     return model
