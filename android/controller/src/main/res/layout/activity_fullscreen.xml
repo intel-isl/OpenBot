@@ -70,8 +70,6 @@
 
     </org.openbot.controller.customComponents.SplashScreenLayout>
 
-    <!-- This FrameLayout insets its children based on system windows using
-         android:fitsSystemWindows. -->
     <org.openbot.controller.customComponents.MainFrameLayout
         android:id="@+id/mainScreen"
         style="@style/mainStyle"
@@ -87,8 +85,8 @@
 
         </FrameLayout>
 
-        <org.openbot.controller.customComponents.DriveModeControlsLayout
-            android:id="@+id/driveModeControls"
+        <org.openbot.controller.customComponents.DriveModeSlidersLayout
+            android:id="@+id/driveModeSlidersLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
@@ -183,10 +181,10 @@
                 android:id="@+id/video_controls"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
-                android:layout_marginStart="20dp"
-                android:layout_toEndOf="@+id/left_slider"
                 android:layout_below="@id/top_buttons"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="20dp"
+                android:layout_toEndOf="@+id/left_slider"
                 android:orientation="vertical">
 
                 <org.openbot.controller.customComponents.Sound
@@ -194,8 +192,8 @@
                     style="@style/IconOnlyButton"
                     android:layout_width="60dp"
                     android:layout_height="60dp"
-                    android:background="@drawable/button"
                     android:layout_gravity="center"
+                    android:background="@drawable/button"
                     app:icon="@drawable/volume_off_24" />
 
                 <org.openbot.controller.customComponents.MirrorImage
@@ -203,8 +201,8 @@
                     style="@style/IconOnlyButton"
                     android:layout_width="60dp"
                     android:layout_height="60dp"
-                    android:background="@drawable/button"
                     android:layout_gravity="center"
+                    android:background="@drawable/button"
                     app:icon="@drawable/toggle_mirror" />
 
             </LinearLayout>
@@ -251,7 +249,32 @@
                     android:thumb="@drawable/custom_thumb" />
 
             </LinearLayout>
-        </org.openbot.controller.customComponents.DriveModeControlsLayout>
+        </org.openbot.controller.customComponents.DriveModeSlidersLayout>
+
+        <org.openbot.controller.customComponents.DriveModeTiltLayout
+            android:id="@+id/controlModeTiltLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <LinearLayout
+                android:id="@+id/tilt_mode_components"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp"
+                android:orientation="vertical">
+
+            <org.openbot.controller.customComponents.FadeableTextView
+                android:id="@+id/double_tap_message"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/double_tab_to_go_back"
+                android:gravity="center"
+                android:textSize="32sp" />
+            </LinearLayout>
+
+        </org.openbot.controller.customComponents.DriveModeTiltLayout>
 
         <org.openbot.controller.customComponents.BotSetupControlsLayout
             android:id="@+id/botSetupButtons"
@@ -300,23 +323,36 @@
                     android:text="@string/Drive_mode" />
             </LinearLayout>
 
-            <LinearLayout
+            <RelativeLayout
+                android:id="@+id/control_mode_layout"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_gravity="end"
-                android:layout_margin="20dp"
+                android:layout_gravity="center"
                 android:gravity="center"
-                android:orientation="horizontal">
+                android:orientation="vertical">
 
-                <TextView
-                    android:id="@+id/tap_to_switch_screens_message"
+                <LinearLayout
+                    android:id="@+id/controller_mode_buttons"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:gravity="end"
-                    android:text="@string/switch_screens"
-                    android:textSize="24sp" />
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:orientation="vertical">
 
-            </LinearLayout>
+                    <org.openbot.controller.customComponents.ControllerModeSliders
+                        android:id="@+id/control_mode_sliders"
+                        style="@style/buttonWithBorderStyle"
+                        android:layout_margin="20dp"
+                        android:text="@string/use_controls_to_drive" />
+
+                    <org.openbot.controller.customComponents.ControllerModeTilt
+                        android:id="@+id/control_mode_tilt"
+                        style="@style/buttonWithBorderStyle"
+                        android:layout_margin="20dp"
+                        android:text="@string/drive_by_tilting_the_phone" />
+
+                </LinearLayout>
+
+            </RelativeLayout>
 
         </org.openbot.controller.customComponents.BotSetupControlsLayout>
     </org.openbot.controller.customComponents.MainFrameLayout>

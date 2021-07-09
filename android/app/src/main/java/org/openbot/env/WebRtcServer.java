@@ -61,7 +61,6 @@ public class WebRtcServer implements IVideoServer {
   private final String TAG = "WebRtcPeer";
   private SurfaceViewRenderer view;
   private Size resolution = new Size(640, 360);
-  private MirrorImageSetter mirror = new MirrorImageSetter();
 
   public static final String VIDEO_TRACK_ID = "ARDAMSv0";
   public static final int VIDEO_RESOLUTION_WIDTH = 640;
@@ -205,7 +204,10 @@ public class WebRtcServer implements IVideoServer {
     mediaStream.addTrack(localAudioTrack);
     peerConnection.addStream(mediaStream);
 
-    cameraControlHandler.disableAudio();
+    boolean isMute = ControllerConfig.getInstance().isMute();
+    if (isMute) {
+      cameraControlHandler.disableAudio();
+    }
   }
 
   private void stopStreamingVideo() {
@@ -446,43 +448,19 @@ public class WebRtcServer implements IVideoServer {
     }
 
     private void handleCameraControlEvents() {
+      ControllerConfig config = ControllerConfig.getInstance();
       ControllerToBotEventBus.subscribe(
           this.getClass().getSimpleName(),
           event -> {
             String commandType = event.getString("command");
 
-            switch (commandType) {
-              case "TOGGLE_SOUND":
-                if (mediaStream.audioTracks.size() > 0) {
-                  AudioTrack audio = mediaStream.audioTracks.get(0);
-                  audio.setEnabled(!audio.enabled());
-
-                  // inform the controller of current state
-                  BotToControllerEventBus.emitEvent(
-                      ConnectionUtils.createStatus("TOGGLE_SOUND", audio.enabled()));
-                }
-
-                break;
-
-              case "TOGGLE_MIRROR":
-                mirror.setMirrored(!mirror.isMirrored());
-
-                // inform the controller of current state
-                BotToControllerEventBus.emitEvent(
-                    ConnectionUtils.createStatus("TOGGLE_MIRROR", mirror.isMirrored()));
-                break;
+            if (mediaStream.audioTracks.size() > 0) {
+              AudioTrack audio = mediaStream.audioTracks.get(0);
+              audio.setEnabled(!audio.enabled());
             }
           },
           error -> Log.d(null, "Error occurred in ControllerToBotEventBus: " + error),
-          event ->
-              event.has("command")
-                  && ("TOGGLE_SOUND".equals(event.getString("command"))
-                      || "TOGGLE_MIRROR"
-                          .equals(
-                              event.getString(
-                                  "command"))) // filter out all but the "TOGGLE_SOUND" and
-          // "TOGGLE_MIRROR" commands..
-          );
+          event -> event.has("command") && "TOGGLE_SOUND".equals(event.getString("command")));
     }
   }
 
@@ -490,18 +468,6 @@ public class WebRtcServer implements IVideoServer {
   private void beep() {
     final ToneGenerator tg = new ToneGenerator(6, 100);
     tg.startTone(ToneGenerator.TONE_CDMA_ALERT_NETWORK_LITE);
-  }
-
-  class MirrorImageSetter {
-    public boolean isMirrored() {
-      return isMirrored;
-    }
-
-    public void setMirrored(boolean mirrored) {
-      isMirrored = mirrored;
-    }
-
-    private boolean isMirrored = true;
   }
 
   class SignalingHandler {

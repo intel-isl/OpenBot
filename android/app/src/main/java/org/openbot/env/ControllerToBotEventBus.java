@@ -7,6 +7,7 @@ import io.reactivex.rxjava3.functions.Predicate;
 import io.reactivex.rxjava3.subjects.PublishSubject;
 import java.util.HashMap;
 import java.util.Map;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 public final class ControllerToBotEventBus {
@@ -17,7 +18,15 @@ public final class ControllerToBotEventBus {
 
   private static final PublishSubject<JSONObject> subject = PublishSubject.create();
 
-  public static void emitEvent(JSONObject event) {
+  public static void emitEvent(String event) {
+    try {
+      emitEvent(new JSONObject(event));
+    } catch (JSONException e) {
+      e.printStackTrace();
+    }
+  }
+
+  private static void emitEvent(JSONObject event) {
     subject.onNext(event);
   }
 

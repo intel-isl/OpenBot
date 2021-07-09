@@ -77,8 +77,6 @@ class CommandHandler:
                     elif event.key==K_s:
                         self.reset()
 
-
-                        
                 if event.type == pygame.KEYDOWN:
                     if event.key==K_w:
                         self.go_forward()

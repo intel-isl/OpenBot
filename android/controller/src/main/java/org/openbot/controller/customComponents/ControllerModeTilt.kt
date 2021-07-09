@@ -11,18 +11,24 @@ package org.openbot.controller.customComponents
 
 import android.content.Context
 import android.util.AttributeSet
+import org.openbot.controller.utils.SensorReader
 
-class LogsButton @JvmOverloads constructor(
+class ControllerModeTilt @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
-) : Button(context, attrs, defStyleAttr) {
+) : ButtonWithBorder(context, attrs, defStyleAttr) {
 
     init {
-        setOnTouchListener(OnTouchListener("{command: LOGS}"))
-        subscribe("LOGS", ::onDataReceived)
+        SensorReader.init(context)
+        setOnTouchListener(OnTouchListener("{command: {CONTROL_MODE: \"tilt\"}}"))
+        subscribe("CONTROL_MODE", ::onDataReceived)
         offState()
     }
 
     private fun onDataReceived(data: String) {
         setOnOffStateConditions(data)
+    }
+
+    override fun setOnOffStateConditions(value: String) {
+        if (value == "tilt") onState() else offState()
     }
 }

@@ -18,8 +18,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Scanner;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.openbot.utils.ConnectionUtils;
 import timber.log.Timber;
 
@@ -149,12 +147,7 @@ public class NetworkServiceConnection implements ILocalConnection {
           ((Activity) context)
               .runOnUiThread(
                   () -> {
-                    try {
-                      ControllerToBotEventBus.emitEvent(
-                          new JSONObject("{command: \"DISCONNECTED\"}"));
-                    } catch (JSONException e) {
-                      e.printStackTrace();
-                    }
+                    ControllerToBotEventBus.emitEvent("{command: \"DISCONNECTED\"}");
                   });
         }
 
@@ -209,11 +202,7 @@ public class NetworkServiceConnection implements ILocalConnection {
           ((Activity) context)
               .runOnUiThread(
                   () -> {
-                    try {
-                      ControllerToBotEventBus.emitEvent(new JSONObject("{command: \"CONNECTED\"}"));
-                    } catch (JSONException e) {
-                      e.printStackTrace();
-                    }
+                    ControllerToBotEventBus.emitEvent("{command: \"CONNECTED\"}");
                   });
 
           new Thread("Receiver Thread") {
@@ -340,12 +329,7 @@ public class NetworkServiceConnection implements ILocalConnection {
         ((Activity) context)
             .runOnUiThread(
                 () -> {
-                  try {
-                    ControllerToBotEventBus.emitEvent(
-                        new JSONObject("{command: \"DISCONNECTED\"}"));
-                  } catch (JSONException e) {
-                    e.printStackTrace();
-                  }
+                  ControllerToBotEventBus.emitEvent("{command: \"DISCONNECTED\"}");
                 });
       } catch (IOException e) {
         e.printStackTrace();

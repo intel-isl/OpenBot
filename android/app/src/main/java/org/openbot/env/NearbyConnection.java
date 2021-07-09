@@ -37,8 +37,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Timer;
 import java.util.TimerTask;
 import org.jetbrains.annotations.NotNull;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.openbot.OpenBotApplication;
 import org.openbot.utils.ConnectionUtils;
 import timber.log.Timber;
@@ -156,11 +154,7 @@ public class NearbyConnection implements ILocalConnection {
 
             pairedDeviceEndpointId = endpointId;
             isConnected = true;
-            try {
-              ControllerToBotEventBus.emitEvent(new JSONObject("{command: \"CONNECTED\"}"));
-            } catch (JSONException e) {
-              e.printStackTrace();
-            }
+            ControllerToBotEventBus.emitEvent("{command: \"CONNECTED\"}");
           } else {
             Timber.i("onConnectionResult: connection failed");
             isConnected = false;
@@ -181,11 +175,7 @@ public class NearbyConnection implements ILocalConnection {
                   Toast.LENGTH_LONG)
               .show();
           Timber.i("onDisconnected: disconnected from the opponent");
-          try {
-            ControllerToBotEventBus.emitEvent(new JSONObject("{command: \"DISCONNECTED\"}"));
-          } catch (JSONException e) {
-            e.printStackTrace();
-          }
+          ControllerToBotEventBus.emitEvent("{command: \"DISCONNECTED\"}");
         }
       };
 

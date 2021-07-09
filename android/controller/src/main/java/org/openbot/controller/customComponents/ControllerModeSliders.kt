@@ -12,17 +12,21 @@ package org.openbot.controller.customComponents
 import android.content.Context
 import android.util.AttributeSet
 
-class LogsButton @JvmOverloads constructor(
+class ControllerModeSliders @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
-) : Button(context, attrs, defStyleAttr) {
+) : ButtonWithBorder(context, attrs, defStyleAttr) {
 
     init {
-        setOnTouchListener(OnTouchListener("{command: LOGS}"))
-        subscribe("LOGS", ::onDataReceived)
+        setOnTouchListener(OnTouchListener("{command: {CONTROL_MODE: \"sliders\"}}"))
+        subscribe("CONTROL_MODE", ::onDataReceived)
         offState()
     }
 
     private fun onDataReceived(data: String) {
         setOnOffStateConditions(data)
+    }
+
+    override fun setOnOffStateConditions(value: String) {
+        if (value == "sliders") onState() else offState()
     }
 }

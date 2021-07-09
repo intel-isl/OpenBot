@@ -22,6 +22,7 @@ class SplashScreenLayout @JvmOverloads constructor(
 
     fun show() {
         visibility = VISIBLE
+        bringToFront()
     }
 
     fun hide() {

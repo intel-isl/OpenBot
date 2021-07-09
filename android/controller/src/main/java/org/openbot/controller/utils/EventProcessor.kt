@@ -63,5 +63,6 @@ object EventProcessor {
         object StopAdvertising : ProgressEvents()
         object AdvertisingFailed : ProgressEvents()
         object TemporaryConnectionProblem : ProgressEvents()
+        object PhoneOnTable : ProgressEvents()
     }
 }

@@ -9,9 +9,11 @@
 
 package org.openbot.controller.customComponents
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.util.AttributeSet
 import android.widget.LinearLayout
+import org.openbot.controller.StatusEventBus
 
 class BotSetupControlsLayout @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0

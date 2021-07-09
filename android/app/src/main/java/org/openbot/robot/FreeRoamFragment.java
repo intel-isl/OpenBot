@@ -274,12 +274,14 @@ public class FreeRoamFragment extends ControlsFragment {
         handleDriveCommand();
         setControlMode(ControlMode.GAMEPAD);
         break;
+
       case Constants.CMD_SPEED_DOWN:
         setSpeedMode(
             Enums.toggleSpeed(
                 Enums.Direction.DOWN.getValue(),
                 Enums.SpeedMode.getByID(preferencesManager.getSpeedMode())));
         break;
+
       case Constants.CMD_SPEED_UP:
         setSpeedMode(
             Enums.toggleSpeed(

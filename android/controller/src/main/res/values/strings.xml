@@ -10,8 +10,10 @@
     <string name="reconnect">Search again</string>
     <string name="searching">Searching for OpenBot…</string>
     <string name="hint_connect">Select <b>Phone</b> as control mode in the bot app to connect</string>
-    <string name="switch_screens">Double-tap to switch screens</string>
     <string name="logs">Logs</string>
     <string name="openbot_icon">OpenBot Icon</string>
     <string name="app_icon">App Icon</string>
+    <string name="drive_by_tilting_the_phone">Drive by tilting the phone</string>
+    <string name="use_controls_to_drive">Use on-screen controls to drive</string>
+    <string name="double_tab_to_go_back">Double-tap or put down phone on a flat surface to go back to previous screen.</string>
 </resources>

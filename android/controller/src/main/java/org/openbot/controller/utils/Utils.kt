@@ -64,4 +64,7 @@ object Utils {
         return ""
     }
 
+    fun isWithin(value: Float?, desiredValue: Float?, tolerance: Float?): Boolean {
+        return value!! in (desiredValue!! - tolerance!!)..(desiredValue + tolerance)
+    }
 }
